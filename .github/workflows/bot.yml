@@ -18,26 +18,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create config.py
+      - name: Create config and cookies
         run: |
           cat > config.py << PYEOF
           BOT_TOKEN = "${BOT_TOKEN}"
           TELEGRAM_API = ${TELEGRAM_API}
           TELEGRAM_HASH = "${TELEGRAM_HASH}"
           OWNER_ID = ${OWNER_ID}
+          YT_DLP_OPTIONS = {"cookiefile": "cookies.txt"}
           PYEOF
+          cat > cookies.txt << 'COOKIEEOF'
+          ${{ secrets.COOKIES }}
+          COOKIEEOF
+          touch log.txt
 
-      - name: Build Docker image with config
-        run: docker build . -t mltb-local
-
-      - name: Run bot (auto-restart every ~5h)
+      - name: Run bot in Docker container
         run: |
           while true; do
             echo "=== Container started at $(date) ==="
-            timeout 17900 docker run --rm --network host \
-              mltb-local || true
-            echo "=== Container stopped at $(date), restarting in 10s... ==="
-            # Clean up any leftover containers
-            docker ps -aq | xargs -r docker rm -f 2>/dev/null || true
+            timeout 17800 docker run --rm --network host \
+              -v $PWD/config.py:/app/config.py \
+              -v $PWD/cookies.txt:/app/cookies.txt \
+              -v $PWD/log.txt:/app/log.txt \
+              anasty17/mltb:latest \
+              bash -c '
+                source mltbenv/bin/activate
+                pip install -q -r requirements.txt 2>&1 | tail -3
+                bash start.sh 2>&1
+              ' || true
+            echo "=== Container stopped at $(date) ==="
+            tail -30 log.txt 2>/dev/null || echo "(log vacío)"
+            echo "=== Restarting in 10s ==="
             sleep 10
           done
