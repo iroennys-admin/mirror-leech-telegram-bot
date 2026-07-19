@@ -1,0 +1,56 @@
+name: MLTB Bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */5 * * *'
+
+env:
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  TELEGRAM_API: ${{ secrets.TELEGRAM_API }}
+  TELEGRAM_HASH: ${{ secrets.TELEGRAM_HASH }}
+  OWNER_ID: ${{ secrets.OWNER_ID }}
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq aria2 p7zip-full ffmpeg
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create config.py
+        run: |
+          cat > config.py << PYEOF
+          BOT_TOKEN = "${BOT_TOKEN}"
+          TELEGRAM_API = ${TELEGRAM_API}
+          TELEGRAM_HASH = "${TELEGRAM_HASH}"
+          OWNER_ID = ${OWNER_ID}
+          PYEOF
+
+      - name: Install Python dependencies
+        run: |
+          python -m venv mltbenv
+          source mltbenv/bin/activate
+          pip install -q -r requirements.txt
+          pip install -q -r requirements-cli.txt
+
+      - name: Run bot (auto-restart every ~5h)
+        run: |
+          source mltbenv/bin/activate
+          while true; do
+            echo "=== Bot started at $(date) ==="
+            timeout 17900 bash start.sh || true
+            echo "=== Bot stopped at $(date), restarting in 15s... ==="
+            pkill -f "aria2c|python3" 2>/dev/null || true
+            sleep 15
+          done
