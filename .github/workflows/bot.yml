@@ -37,6 +37,16 @@ jobs:
           GDRIVE_ID = "11gMbmIjaJM8lTBEFa-J9pT2yDl_1D9dn"
           IS_TEAM_DRIVE = False
           YT_DLP_OPTIONS = {"cookiefile": "cookies.txt"}
+          SEARCH_LIMIT = 20
+          SEARCH_PLUGINS = [
+              "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/piratebay.py",
+              "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/limetorrents.py",
+              "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/torlock.py",
+              "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/torrentscsv.py",
+              "https://raw.githubusercontent.com/qbittorrent/search-plugins/master/nova3/engines/eztv.py",
+              "https://raw.githubusercontent.com/LightDestory/qBittorrent-Search-Plugins/master/src/engines/thepiratebay.py",
+              "https://raw.githubusercontent.com/v1k45/1337x-qBittorrent-search-plugin/master/leetx.py",
+          ]
           PYEOF
 
       - name: Create cookies
