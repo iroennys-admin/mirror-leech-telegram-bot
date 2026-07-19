@@ -18,16 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install everything
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq aria2 p7zip-full ffmpeg python3-venv
-          python3 -m venv mltbenv
-          source mltbenv/bin/activate
-          pip install -q -r requirements.txt
-          pip install -q -r requirements-cli.txt
-
-      - name: Create config
+      - name: Create config.py
         run: |
           cat > config.py << PYEOF
           BOT_TOKEN = "${BOT_TOKEN}"
@@ -49,31 +40,21 @@ jobs:
           ]
           PYEOF
 
-      - name: Create cookies
+      - name: Create cookies.txt
         run: |
           cat > cookies.txt << 'COOKIEEOF'
           ${{ secrets.COOKIES }}
           COOKIEEOF
 
-      - name: Run bot
+      - name: Build Docker image with config
+        run: docker build . -t mltb-local
+
+      - name: Run bot (auto-restart every ~5h)
         run: |
-          source mltbenv/bin/activate
-          # Start aria2 in background
-          mkdir -p downloads
-          aria2c --enable-rpc=true --rpc-listen-port=6800 --daemon=true \
-            --dir=downloads --quiet=true 2>&1
-          echo "aria2 started"
-          # Run bot directly (no start.sh - skip update.py)
-          python3 -m bot 2>&1 | tee /tmp/bot.log &
-          BOTPID=$!
-          echo "bot PID: $BOTPID"
-          # Wait 30s then check if alive
-          sleep 30
-          if kill -0 $BOTPID 2>/dev/null; then
-            echo "Bot running!"
-            # Keep running for 5h
-            sleep 17870
-          else
-            echo "Bot crashed! Last log lines:"
-            tail -60 log.txt 2>/dev/null || echo "(no log.txt)"
-          fi
+          while true; do
+            echo "=== Container started at $(date) ==="
+            timeout 17900 docker run --rm --network host mltb-local || true
+            echo "=== Container stopped at $(date), restarting in 10s... ==="
+            docker ps -aq | xargs -r docker rm -f 2>/dev/null || true
+            sleep 10
+          done
