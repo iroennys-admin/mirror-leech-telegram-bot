@@ -18,19 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq software-properties-common
-          sudo add-apt-repository -y universe
-          sudo apt-get install -y -qq aria2 qbittorrent-nox sabnzbdplus \
-            p7zip-full ffmpeg mediainfo
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Create config.py
         run: |
           cat > config.py << PYEOF
@@ -40,21 +27,17 @@ jobs:
           OWNER_ID = ${OWNER_ID}
           PYEOF
 
-      - name: Install Python dependencies
-        run: |
-          python -m venv mltbenv
-          source mltbenv/bin/activate
-          pip install -q -r requirements.txt
-          pip install -q -r requirements-cli.txt
+      - name: Build Docker image with config
+        run: docker build . -t mltb-local
 
       - name: Run bot (auto-restart every ~5h)
         run: |
-          source mltbenv/bin/activate
           while true; do
-            echo "=== Bot started at $(date) ==="
-            # timeout must wrap the whole chain: update.py + bot
-            timeout 17900 bash start.sh || true
-            echo "=== Bot stopped at $(date), restarting in 15s... ==="
-            pkill -f "aria2c|qbittorrent|sabnzbdplus|python3" 2>/dev/null || true
-            sleep 15
+            echo "=== Container started at $(date) ==="
+            timeout 17900 docker run --rm --network host \
+              mltb-local || true
+            echo "=== Container stopped at $(date), restarting in 10s... ==="
+            # Clean up any leftover containers
+            docker ps -aq | xargs -r docker rm -f 2>/dev/null || true
+            sleep 10
           done
