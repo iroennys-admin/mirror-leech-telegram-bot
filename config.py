@@ -1,13 +1,8 @@
-#!/bin/bash
-
-# Genera config.py desde variables de entorno si BOT_TOKEN está seteado
-if [ -n "$BOT_TOKEN" ]; then
-    cat > config.py << PYEOF
-BOT_TOKEN = "${BOT_TOKEN}"
-TELEGRAM_API = ${TELEGRAM_API}
-TELEGRAM_HASH = "${TELEGRAM_HASH}"
-OWNER_ID = ${OWNER_ID}
-GDRIVE_ID = "${GDRIVE_ID}"
+BOT_TOKEN = "8697384341:AAE1eT_mITpOWjzQZOTu55Rk4yF8VDebdEk"
+TELEGRAM_API = 14681595
+TELEGRAM_HASH = "a86730aab5c59953c424abb4396d32d5"
+OWNER_ID = 7970466590
+GDRIVE_ID = "11gMbmIjaJM8lTBEFa-J9pT2yDl_1D9dn"
 IS_TEAM_DRIVE = False
 YT_DLP_OPTIONS = {"cookiefile": "cookies.txt"}
 SEARCH_LIMIT = 20
@@ -20,13 +15,3 @@ SEARCH_PLUGINS = [
     "https://raw.githubusercontent.com/LightDestory/qBittorrent-Search-Plugins/master/src/engines/thepiratebay.py",
     "https://raw.githubusercontent.com/v1k45/1337x-qBittorrent-search-plugin/master/leetx.py",
 ]
-PYEOF
-fi
-
-# Cookies desde variable de entorno
-if [ -n "$COOKIES" ]; then
-    printf '%s\n' "$COOKIES" > cookies.txt
-fi
-
-source mltbenv/bin/activate
-exec bash start.sh

@@ -2,11 +2,6 @@ FROM anasty17/mltb:latest
 
 WORKDIR /app
 
-# Copia todo el código del bot (sin config.py ni cookies.txt, están en .gitignore)
 COPY . .
 
-# Permisos al entrypoint
-RUN chmod +x start-koyeb.sh
-
-# Entrypoint que genera config.py desde vars de entorno en runtime
-CMD ["bash", "start-koyeb.sh"]
+CMD ["bash", "start.sh"]

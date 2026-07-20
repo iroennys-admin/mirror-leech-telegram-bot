@@ -17,3 +17,7 @@ downloads/*
 __pycache__/
 # Local Pi runtime state
 .atl/
+
+# !!! TEMPORAL para Koyeb deploy - borrar después !!!
+!config.py
+!cookies.txt
