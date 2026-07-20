@@ -53,7 +53,7 @@ jobs:
         run: |
           while true; do
             echo "=== Container started at $(date) ==="
-            timeout 17900 docker run --rm --network host mltb-local || true
+            timeout 19800 docker run --rm --network host mltb-local || true
             echo "=== Container stopped at $(date), restarting in 10s... ==="
             docker ps -aq | xargs -r docker rm -f 2>/dev/null || true
             sleep 10
