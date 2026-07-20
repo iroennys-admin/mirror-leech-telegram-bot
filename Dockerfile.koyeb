@@ -4,4 +4,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD ["python3", "koyeb-boot.py"]
+CMD ["bash", "start.sh"]
