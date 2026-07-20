@@ -4,4 +4,4 @@ WORKDIR /app
 
 COPY . .
 
-CMD ["bash", "start.sh"]
+CMD ["bash", "-c", "python3 healthcheck.py & exec bash start.sh"]
